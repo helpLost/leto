@@ -17,7 +17,11 @@
         };
         class decal {
             private:
+                unsigned INDICES[6] = {0, 1, 3, 1, 2, 3};
+                unsigned VAO, VBO, EBO, TEXTURE;
             public:
+                decal(std::string name, float height, float width);
+                void render(shader &shader);
         };
         class model {
             private:
@@ -25,7 +29,10 @@
         };
         class scene {
             private:
+                std::vector<shader> SHADERS; std::vector<model> MODELS; std::vector<decal> DECALS;
             public:
+                scene();
+                void render();
         };
     }
 

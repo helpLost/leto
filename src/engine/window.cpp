@@ -1,5 +1,4 @@
 #include "window.hpp"
-#define STB_IMAGE_IMPLEMENTATION
 #include <STB/stb_image.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) { glViewport(0, 0, width, height); }
@@ -43,9 +42,6 @@ namespace leto {
         glClearColor(background[0], background[1], background[2], 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        shader twod("2d");
-        twod.use();
-        
         // Swap the buffers
         glfwSwapBuffers(instance);
     }
