@@ -4,7 +4,7 @@
     #include <string>
     #include <vector>
     #include <iostream>
-    #include <GLAD/glad.h>
+    #include "scene.hpp"
     #include <GLFW/glfw3.h>
     #include <GLAD/glm.hpp>
     namespace leto {

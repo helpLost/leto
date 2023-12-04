@@ -1,0 +1,11 @@
+- v0.001 - Window:
+    - Functional window
+    - Rendering framework
+    - Updating framework
+- v0.002 - Camera:
+    - 3D camera (fly and fps)
+    - 2D rendering / texture loading
+- v0.003 - Scene:
+    - Scene and advanced rendering framework
+    - Deltatime measurement
+    - FPS counter
