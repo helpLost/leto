@@ -5,22 +5,19 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <STB/stb_image.h>
 
-void compileShader(unsigned &var, const char* raw, int type), linkShader(unsigned &id, unsigned &vertex, unsigned &fragment);
+void compileShader(unsigned &program, const char* vraw, const char* fraw);
 void createVertexObject(unsigned &VAO, unsigned &VBO, unsigned &EBO, float vertices[], unsigned int indices[], float vertSize, float indSize, int drawType, GLint vertexAttribSize, bool texture, GLsizei stride, const void* pointer);
 void createTexture2D(unsigned &var, int wrapping, int minfilter, int maxfilter, std::string path);
 namespace leto {
     shader::shader(std::string name) {
-        std::string vraw, fraw; std::ifstream vfile("../src/data/shaders/" + name + "/vertex.vs"), ffile("../src/data/shaders/" + name + "/fragment.fs");
-        const char* vbetter, *fbetter;
+        std::ifstream vfile("../src/data/shaders/" + name + "/vertex.vs"), ffile("../src/data/shaders/" + name + "/fragment.fs");
         if(vfile && ffile) {
-            std::stringstream vstream, fstream; vstream << vfile.rdbuf(); fstream << ffile.rdbuf(); 
-            vraw = vstream.str(); fraw = fstream.str(); vbetter = vraw.c_str(); fbetter = fraw.c_str();
-
-            unsigned vertex, fragment;
-            compileShader(vertex, vbetter, GL_VERTEX_SHADER); compileShader(fragment, fbetter, GL_FRAGMENT_SHADER);
-            linkShader(programID, vertex, fragment);
+            std::stringstream vstream, fstream; vstream << vfile.rdbuf(); fstream << ffile.rdbuf(); std::string vstr = vstream.str(), fstr = fstream.str(); 
+            const char *vraw = vstr.c_str(), *fraw = fstr.c_str();
+            compileShader(PROGRAM, vraw, fraw);
         } else { std::cout << "The streams for shader '" << name << "' failed to initialize correctly. This error, while not fatal, may cause unforseen gameplay issues." << std::endl; }
     }
+
     decal::decal(std::string name, float height, float width) {
         float vertices[20] = {
             // positions          // texture coords
@@ -30,24 +27,26 @@ namespace leto {
         createVertexObject(VAO, VBO, EBO, vertices, INDICES, sizeof(vertices), sizeof(INDICES), GL_STATIC_DRAW, 3, true, 5 * sizeof(float), (void*)0);
         createTexture2D(TEXTURE, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, "leto.png");
     }
-}
-
-void checkErrors(unsigned &shader) {
-    int success; char infoLog[1024]; glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-    if (!success) { 
-        glGetShaderInfoLog(shader, 1024, NULL, infoLog);
-        std::cout << "A shader had an error during compilation. Please check all file paths if this is happening during debug, if you're playing a release, please redownload the files, there is likely one missing. Error:\n" << infoLog << std::endl;
+    void decal::render(shader &shader) {
+        // should work? idk test this when home
+        glBindTexture(GL_TEXTURE_2D, TEXTURE); shader.use();
+        glBindVertexArray(VAO); glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     }
 }
-void compileShader(unsigned &var, const char* raw, int type) {
-    var = glCreateShader(type); glShaderSource(var, 1, &raw, NULL);
-    glCompileShader(var); checkErrors(var);
-}
-void linkShader(unsigned &id, unsigned &vertex, unsigned &fragment) {
-    id = glCreateProgram(); glAttachShader(id, vertex); glAttachShader(id, fragment);
-    glLinkProgram(id); glDeleteShader(vertex); glDeleteShader(fragment);
-}
 
+void compileShader(unsigned &program, const char* vraw, const char* fraw) {
+    auto checkErrors = [](unsigned &shader){ // fucky lambda magic
+        int success; char infoLog[1024]; glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+        if (!success) { 
+            glGetShaderInfoLog(shader, 1024, NULL, infoLog);
+            std::cout << "A shader had an error during compilation. Please check all file paths if this is happening during debug, if you're playing a release, please redownload the files, there is likely one missing. Error:\n" << infoLog << std::endl;
+        }
+    };
+    unsigned vertex = glCreateShader(GL_VERTEX_SHADER), fragment = glCreateShader(GL_FRAGMENT_SHADER); 
+    glShaderSource(vertex, 1, &vraw, NULL); glShaderSource(fragment, 1, &fraw, NULL); glCompileShader(vertex); checkErrors(vertex); glCompileShader(fragment); checkErrors(fragment);
+    program = glCreateProgram(); glAttachShader(program, vertex); glAttachShader(program, fragment);
+    glLinkProgram(program); glDetachShader(program, vertex); glDeleteShader(vertex); glDetachShader(program, vertex); glDeleteShader(fragment);
+}
 void createVertexObject(unsigned &VAO, unsigned &VBO, unsigned &EBO, float vertices[], unsigned int indices[], float vertSize, float indSize, int drawType, GLint vertexAttribSize, bool texture, GLsizei stride, const void* pointer) {
     glGenVertexArrays(1, &VAO); glGenBuffers(1, &VBO); glBindVertexArray(VAO); glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, vertSize, vertices, drawType); glGenBuffers(1, &EBO); glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO); glBufferData(GL_ELEMENT_ARRAY_BUFFER, indSize, indices, drawType);

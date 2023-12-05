@@ -26,7 +26,7 @@ namespace leto {
 
         // Window icon loading
         GLFWimage images[1]; std::string path = "../src/data/interface/" + icon;
-        images[0].pixels = stbi_load(path.c_str(), &images[0].width, &images[0].height, 0, 4); // last param is RGBA channels
+        images[0].pixels = stbi_load(path.c_str(), &images[0].width, &images[0].height, 0, 4); // last param is RGBA channels, with four it means the image must have an alpha
         if(images[0].pixels) { glfwSetWindowIcon(instance, 1, images); } else { std::cout << "Failed to find window icon for window '" << TITLE << "' at 'src/data/interface/" << icon << "'. This is not a fatal error, but a file's probably missing." << std::endl; }
         stbi_image_free(images[0].pixels);
 
@@ -35,7 +35,6 @@ namespace leto {
         std::cout << "Created window '" << TITLE << "' successfully. Default dimensions are " << WIDTH << "x" << HEIGHT << "." << std::endl;
         if(autostart) { start(); } // if autostart is false you have to call "start()" somewhere
     }
-
     void window::start() { while(!glfwWindowShouldClose(instance)) { render(); update(); } endprogram(); } // run the window until it's closed
     void window::render() {
         // Color the backgroud and clear the buffer bits
