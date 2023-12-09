@@ -20,8 +20,8 @@
         class window {
             private:
                 int WIDTH, HEIGHT;
-                float FPS, LASTFRAME, DELTATIME;
-                bool VYSNC = true, ANTIALIASING = true;
+                float LASTFRAME, DELTATIME;
+                bool VSYNC = true, ANTIALIASING = true;
                 std::string TITLE; monitor PRIMARY; envtype ENVIRONMENT = DEBUG;
                 camera CAMERA = camera(glm::vec3(0.0f, 0.0f, 3.0f));
 
@@ -34,7 +34,7 @@
                 {
                     window* obj = reinterpret_cast<window *>(glfwGetWindowUserPointer(instance));
                     obj->scroll_callback(xoffset, yoffset);
-                }
+                } 
             public:
                 GLFWwindow *instance; float background[3] = {1.0f, 1.0f, 1.0f}; // init to pure white
                 std::vector<scene> scenes;

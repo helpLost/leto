@@ -31,14 +31,8 @@ namespace leto {
         shader.use(); shader.setInt("TEXTURE", 0);
     }
     void decal::render(shader &shader) {
-        glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, TEXTURE);
-        glBindVertexArray(VAO);
-
-        // calculate the model matrix for each object and pass it to shader before drawing
-        glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
-        model = glm::translate(model, position);
-        shader.setMat4("model", model);
-
+        glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, TEXTURE); glBindVertexArray(VAO); 
+        glm::mat4 model = glm::mat4(1.0f);  model = glm::translate(model, position); shader.setMat4("model", model);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     }
 }

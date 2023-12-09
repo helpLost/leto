@@ -35,7 +35,7 @@ namespace leto {
         stbi_image_free(images[0].pixels);
 
         // Wrapping up
-        if(VYSNC) { glfwSwapInterval(1); }
+        if(VSYNC) { glfwSwapInterval(1); }
         std::cout << "Created window '" << TITLE << "' successfully. Default dimensions are " << WIDTH << "x" << HEIGHT << "." << std::endl;
         if(autostart) { start(); } // if autostart is false you have to call "start()" somewhere
     }

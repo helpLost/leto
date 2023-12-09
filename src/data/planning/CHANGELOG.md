@@ -4,8 +4,18 @@
     - Updating framework
 - v0.002 - Camera:
     - 3D camera (fly and fps)
-    - 2D rendering / texture loading
-- v0.003 - Scene:
-    - Scene and advanced rendering framework
+    - 2D rendering framework
+- v0.003 - Scene: **<-- !! We are here !!**
+    - Texture loading
+    - Scene and advanced/3D rendering framework
     - Deltatime measurement
     - FPS counter
+- v0.004 - Optimizations:
+    - Completely optimization of the gamne
+    - Compile time cut
+    - Error checking
+    - Programming utilities
+- v0.005 - Objects:
+    - Model loader
+    - Animation support
+    - Player character
