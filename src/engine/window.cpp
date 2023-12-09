@@ -1,4 +1,6 @@
 #include "window.hpp"
+#include <GLAD/gtc/matrix_transform.hpp>
+#include <GLAD/gtc/type_ptr.hpp>
 #include <STB/stb_image.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) { glViewport(0, 0, width, height); }
@@ -9,7 +11,7 @@ namespace leto {
         if(!primary) { endprogram("Failed to grab the primary monitor. You're probably on an unsupported machine."); } std::cout << "Primary monitor successfully grabbed. Default dimensions are " << resolution->width << "x" << resolution->height << "." << std::endl;
     }
 
-    window::window(std::string title, std::string icon, bool autostart) :TITLE(title)
+    window::window(std::string title, std::string icon, bool flycamera, bool autostart) :TITLE(title)
     {
         // Params
         if(TITLE.empty()) { endprogram("A window's title is null. This is very likely a problem with the source code, please open a ticket on Github."); }
@@ -23,6 +25,8 @@ namespace leto {
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) { endprogram("GLAD failed to initialize. Something's gone very, very wrong."); }  
         glEnable(GL_DEPTH_TEST); glEnable(GL_BLEND); glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // remember blending will fuck with text
         glfwSetFramebufferSizeCallback(instance, framebuffer_size_callback);
+        glfwSetWindowUserPointer(instance, this); glfwSetCursorPosCallback(instance, mouse_callback); glfwSetScrollCallback(instance, scroll_callback);
+        glfwSetInputMode(instance, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
         // Window icon loading
         GLFWimage images[1]; std::string path = "../src/data/interface/" + icon;
@@ -41,10 +45,36 @@ namespace leto {
         glClearColor(background[0], background[1], background[2], 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        // activate shader
+        shader ourShader("dcl"); ourShader.use();
+
+        // pass projection matrix to shader (note that in this case it could change every frame)
+        glm::mat4 projection = glm::perspective(glm::radians(CAMERA.Zoom), (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
+        ourShader.setMat4("projection", projection);
+
+        // camera/view transformation
+        glm::mat4 view = CAMERA.GetViewMatrix();
+        ourShader.setMat4("view", view);
+        
+        decal ourdecal("leto.png", 0.75f, 0.75f, ourShader); ourdecal.render(ourShader);
+
         // Swap the buffers
         glfwSwapBuffers(instance);
     }
     void window::update() {
+        // Get Deltatime
+        float currentFrame = static_cast<float>(glfwGetTime());
+        DELTATIME = currentFrame - LASTFRAME; LASTFRAME = currentFrame;
+
+        if (glfwGetKey(instance, GLFW_KEY_W) == GLFW_PRESS)
+            CAMERA.ProcessKeyboard(FORWARD, DELTATIME);
+        if (glfwGetKey(instance, GLFW_KEY_S) == GLFW_PRESS)
+            CAMERA.ProcessKeyboard(BACKWARD, DELTATIME);
+        if (glfwGetKey(instance, GLFW_KEY_A) == GLFW_PRESS)
+            CAMERA.ProcessKeyboard(LEFT, DELTATIME);
+        if (glfwGetKey(instance, GLFW_KEY_D) == GLFW_PRESS)
+            CAMERA.ProcessKeyboard(RIGHT, DELTATIME);
+
         // Poll for any window events (close, framebuffer, iconify, etc)
         glfwPollEvents();
     }

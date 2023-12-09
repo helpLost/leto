@@ -4,6 +4,8 @@
 #include <iostream>
 #define STB_IMAGE_IMPLEMENTATION
 #include <STB/stb_image.h>
+#include <GLAD/gtc/matrix_transform.hpp>
+#include <GLAD/gtc/type_ptr.hpp>
 
 void compileShader(unsigned &program, const char* vraw, const char* fraw);
 void createVertexObject(unsigned &VAO, unsigned &VBO, unsigned &EBO, float vertices[], unsigned int indices[], float vertSize, float indSize, int drawType, GLint vertexAttribSize, bool texture, GLsizei stride, const void* pointer);
@@ -18,19 +20,26 @@ namespace leto {
         } else { std::cout << "The streams for shader '" << name << "' failed to initialize correctly. This error, while not fatal, may cause unforseen gameplay issues." << std::endl; }
     }
 
-    decal::decal(std::string name, float height, float width) {
-        float vertices[20] = {
+    decal::decal(std::string name, float height, float width, shader &shader) {
+        float vertices[] = {
             // positions          // texture coords
             width, height, 0.0f,  1.0f, 1.0f,    width,-height, 0.0f,  1.0f, 0.0f, // top right, bottom right
            -width,-height, 0.0f,  0.0f, 0.0f,   -width, height, 0.0f,  0.0f, 1.0f  // bottom left, top left 
         };
         createVertexObject(VAO, VBO, EBO, vertices, INDICES, sizeof(vertices), sizeof(INDICES), GL_STATIC_DRAW, 3, true, 5 * sizeof(float), (void*)0);
-        createTexture2D(TEXTURE, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, "leto.png");
+        createTexture2D(TEXTURE, GL_REPEAT, GL_LINEAR, GL_LINEAR, name);
+        shader.use(); shader.setInt("TEXTURE", 0);
     }
     void decal::render(shader &shader) {
-        // should work? idk test this when home
-        glBindTexture(GL_TEXTURE_2D, TEXTURE); shader.use();
-        glBindVertexArray(VAO); glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, TEXTURE);
+        glBindVertexArray(VAO);
+
+        // calculate the model matrix for each object and pass it to shader before drawing
+        glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+        model = glm::translate(model, position);
+        shader.setMat4("model", model);
+
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     }
 }
 
@@ -55,13 +64,14 @@ void createVertexObject(unsigned &VAO, unsigned &VBO, unsigned &EBO, float verti
     if (texture) { glEnableVertexAttribArray(1); glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (void*)(6 * sizeof(float))); } // texture
 }
 void createTexture2D(unsigned &var, int wrapping, int minfilter, int maxfilter, std::string path) {
-    glGenTextures(1, &var); glBindTexture(GL_TEXTURE_2D, var);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapping); glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapping);
+    glActiveTexture(GL_TEXTURE0); glGenTextures(1, &var); glBindTexture(GL_TEXTURE_2D, var);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minfilter); glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, maxfilter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapping); glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapping);
 
+    stbi_set_flip_vertically_on_load(true);  
     int width, height, channels; std::string fullpath = "../src/data/images/" + path; unsigned char *data = stbi_load(fullpath.c_str(), &width, &height, &channels, 0);
     if (data) {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
     } else { std::cout << "Failed to load texture with path '" << path << "'. Please check all filepaths." << std::endl; }
     stbi_image_free(data);

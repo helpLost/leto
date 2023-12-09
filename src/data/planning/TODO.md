@@ -1,1 +1,4 @@
 - "combat mode" and "drive mode" and shit
+- proper transparent image rendering
+- non-locally stored shaders in the texture class
+- shrink episode !!
