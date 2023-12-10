@@ -23,10 +23,14 @@ namespace leto {
         instance = glfwCreateWindow(WIDTH, HEIGHT, TITLE.c_str(), NULL, NULL); if(!instance) { endprogram("GLFW failed to create a window. Try restarting the program."); }
         glfwMakeContextCurrent(instance); glfwSetWindowPos(instance, 10, 50); if(ENVIRONMENT == PRERELEASE || ENVIRONMENT == RELEASE) { glfwSetInputMode(instance, GLFW_CURSOR, GLFW_CURSOR_DISABLED); } // setting this window to current
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) { endprogram("GLAD failed to initialize. Something's gone very, very wrong."); }  
-        glEnable(GL_DEPTH_TEST); glEnable(GL_BLEND); glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // remember blending will fuck with text
+        glEnable(GL_BLEND); glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // remember blending will fuck with text
         glfwSetFramebufferSizeCallback(instance, framebuffer_size_callback);
         glfwSetWindowUserPointer(instance, this); glfwSetCursorPosCallback(instance, mouse_callback); glfwSetScrollCallback(instance, scroll_callback);
         glfwSetInputMode(instance, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+        shader ourShader = shader("dcl");
+        decal ourdecal = decal("leto.jpg", 0.75f, 0.75f, ourShader);
+        decals.push_back(ourdecal);
 
         // Window icon loading
         GLFWimage images[1]; std::string path = "../src/data/interface/" + icon;
@@ -46,7 +50,8 @@ namespace leto {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // activate shader
-        shader ourShader("dcl"); ourShader.use();
+        shader ourShader = shader("dcl");
+        ourShader.use();
 
         // pass projection matrix to shader (note that in this case it could change every frame)
         glm::mat4 projection = glm::perspective(glm::radians(CAMERA.Zoom), (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
@@ -55,8 +60,7 @@ namespace leto {
         // camera/view transformation
         glm::mat4 view = CAMERA.GetViewMatrix();
         ourShader.setMat4("view", view);
-        
-        decal ourdecal("leto.png", 0.75f, 0.75f, ourShader); ourdecal.render(ourShader);
+        decals[0].render(ourShader);
 
         // Swap the buffers
         glfwSwapBuffers(instance);

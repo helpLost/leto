@@ -9,10 +9,10 @@
     - Texture loading
     - Scene and advanced/3D rendering framework
     - Deltatime measurement
-    - FPS counter
-- v0.004 - Optimizations:
-    - Completely optimization of the gamne
-    - Compile time cut
+- v0.004 - Optimizations & Reworkings I:
+    - Completely optimization of the game
+    - Compile time cuts
+    - Compatibility fixes
     - Error checking
     - Programming utilities
 - v0.005 - Objects:

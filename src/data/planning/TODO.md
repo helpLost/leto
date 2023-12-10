@@ -2,4 +2,4 @@
 - proper transparent image rendering
 - non-locally stored shaders in the texture class
 - shrink episode !!
-- calculate fps better
+- calculate fps

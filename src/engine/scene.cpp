@@ -27,11 +27,38 @@ namespace leto {
            -width,-height, 0.0f,  0.0f, 0.0f,   -width, height, 0.0f,  0.0f, 1.0f  // bottom left, top left 
         };
         createVertexObject(VAO, VBO, EBO, vertices, INDICES, sizeof(vertices), sizeof(INDICES), GL_STATIC_DRAW, 3, true, 5 * sizeof(float), (void*)0);
-        createTexture2D(TEXTURE, GL_REPEAT, GL_LINEAR, GL_LINEAR, name);
-        shader.use(); shader.setInt("TEXTURE", 0);
+            float borderColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+            glGenTextures(1, &TEXTURE);
+            glBindTexture(GL_TEXTURE_2D, TEXTURE); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
+            // set the texture wrapping parameters
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+            glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);  
+
+            // set texture filtering parameters
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+            stbi_set_flip_vertically_on_load(true);  
+            // load image, create texture and generate mipmaps
+            int w, h, nrChannels;
+            unsigned char *data = stbi_load("E:/Projects/leto/src/data/images/rose.png", &w, &h, &nrChannels, 0);
+            if (data)
+            {
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+                glGenerateMipmap(GL_TEXTURE_2D);
+            }
+            else
+            {
+                std::cout << "Failed to load texture" << std::endl;
+            }
+            stbi_image_free(data);
+        // shader.use(); shader.setInt("texture1", 0);
+        // createTexture2D(TEXTURE, GL_REPEAT, GL_LINEAR, GL_LINEAR, name);
+        // shader.use(); shader.setInt("TEXTURE", 0);
     }
     void decal::render(shader &shader) {
-        glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, TEXTURE); glBindVertexArray(VAO); 
+        glBindTexture(GL_TEXTURE_2D, TEXTURE); glBindVertexArray(VAO); 
         glm::mat4 model = glm::mat4(1.0f);  model = glm::translate(model, position); shader.setMat4("model", model);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     }
@@ -55,7 +82,7 @@ void createVertexObject(unsigned &VAO, unsigned &VBO, unsigned &EBO, float verti
     glBufferData(GL_ARRAY_BUFFER, vertSize, vertices, drawType); glGenBuffers(1, &EBO); glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO); glBufferData(GL_ELEMENT_ARRAY_BUFFER, indSize, indices, drawType);
 
     glEnableVertexAttribArray(0); glVertexAttribPointer(0, vertexAttribSize, GL_FLOAT, GL_FALSE, stride, pointer); // position
-    if (texture) { glEnableVertexAttribArray(1); glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (void*)(6 * sizeof(float))); } // texture
+    if (texture) { glEnableVertexAttribArray(1); glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(float))); } // texture
 }
 void createTexture2D(unsigned &var, int wrapping, int minfilter, int maxfilter, std::string path) {
     glActiveTexture(GL_TEXTURE0); glGenTextures(1, &var); glBindTexture(GL_TEXTURE_2D, var);

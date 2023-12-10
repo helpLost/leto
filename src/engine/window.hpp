@@ -24,6 +24,7 @@
                 bool VSYNC = true, ANTIALIASING = true;
                 std::string TITLE; monitor PRIMARY; envtype ENVIRONMENT = DEBUG;
                 camera CAMERA = camera(glm::vec3(0.0f, 0.0f, 3.0f));
+                std::vector<decal> decals;
 
                 static void mouse_callback(GLFWwindow* instance, double xpos, double ypos)
                 {
