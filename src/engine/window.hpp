@@ -1,13 +1,9 @@
 #ifndef SRC_ENGINE_WINDOW_HPP
 #define SRC_ENGINE_WINDOW_HPP
 
-    #include <string>
-    #include <vector>
-    #include <iostream>
     #include "scene.hpp"
     #include "camera.hpp"
     #include <GLFW/glfw3.h>
-    #include <GLAD/glm.hpp>
     namespace leto {
         inline void endprogram(std::string error) { glfwTerminate(); throw std::runtime_error(error.c_str()); }; inline void endprogram() { glfwTerminate(); }
         enum envtype{DEBUG, PRERELEASE, RELEASE};
