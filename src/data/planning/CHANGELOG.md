@@ -6,11 +6,11 @@
     - v0.002 - Camera:
         - 3D camera (fly and fps)
         - 2D rendering framework
-    - v0.003 - Scene: **<-- !! We are here !!**
+    - v0.003 - Scene:
         - Texture loading
         - Scene and advanced/3D rendering framework
         - Deltatime measurement
-    - v0.004 - Optimizations & Reworkings:
+    - v0.004 - Optimizations & Reworkings: **<-- !! We are here !!**
         - Completely optimization of the game
         - Compile time cuts
         - Compatibility fixes
