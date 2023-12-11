@@ -41,7 +41,7 @@ namespace leto {
 
             stbi_set_flip_vertically_on_load(true);  
             // load image, create texture and generate mipmaps
-            int w, h, nrChannels; std::string path = "../src/data/images/" + name;
+            int w, h, nrChannels; std::string path = "../src/data/images/sprites" + name;
             unsigned char *data = stbi_load(path.c_str(), &w, &h, &nrChannels, 0);
             if (data)
             {

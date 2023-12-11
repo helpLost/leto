@@ -29,7 +29,7 @@ namespace leto {
         glfwSetInputMode(instance, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
         // Window icon loading
-        GLFWimage images[1]; std::string path = "../src/data/interface/" + icon;
+        GLFWimage images[1]; std::string path = "../src/data/images/interface/" + icon;
         images[0].pixels = stbi_load(path.c_str(), &images[0].width, &images[0].height, 0, 4); // last param is RGBA channels, with four it means the image must have an alpha
         if(images[0].pixels) { glfwSetWindowIcon(instance, 1, images); } else { std::cout << "Failed to find window icon for window '" << TITLE << "' at 'src/data/interface/" << icon << "'. This is not a fatal error, but a file's probably missing." << std::endl; }
         stbi_image_free(images[0].pixels);
@@ -41,7 +41,7 @@ namespace leto {
         std::cout << "Created window '" << TITLE << "' successfully. Default dimensions are " << WIDTH << "x" << HEIGHT << "." << std::endl;
         if(autostart) { start(); } // if autostart is false you have to call "start()" somewhere
     }
-    void window::start() { scene addition; addscene(addition); model add = model("../src/data/assets/backpack/backpack.obj"); scenes[0].addModel(add); while(!glfwWindowShouldClose(instance)) { render(); update(); } endprogram(); } // run the window until it's closed
+    void window::start() { scene addition; addscene(addition); model add = model("../src/data/assets/models/backpack/backpack.obj"); scenes[0].addModel(add); while(!glfwWindowShouldClose(instance)) { render(); update(); } endprogram(); } // run the window until it's closed
     void window::render() {
         // Color the backgroud and clear the buffer bits
         glClearColor(background[0], background[1], background[2], 1.0f);
@@ -62,19 +62,6 @@ namespace leto {
         shaders[1].setMat4("model", model);
 
         scenes[0].render(shaders);
-
-        // // activate shader
-        // shader ourShader = shader("dcl");
-        // ourShader.use();
-
-        // // pass projection matrix to shader (note that in this case it could change every frame)
-        // glm::mat4 projection = glm::perspective(glm::radians(CAMERA.Zoom), (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
-        // ourShader.setMat4("projection", projection);
-
-        // // camera/view transformation
-        // glm::mat4 view = CAMERA.GetViewMatrix();
-        // ourShader.setMat4("view", view);
-        // scenes[0].render(shaders);
 
         // Swap the buffers
         glfwSwapBuffers(instance);
