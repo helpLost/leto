@@ -1,21 +1,26 @@
-- v0.001 - Window:
-    - Functional window
-    - Rendering framework
-    - Updating framework
-- v0.002 - Camera:
-    - 3D camera (fly and fps)
-    - 2D rendering framework
-- v0.003 - Scene: **<-- !! We are here !!**
-    - Texture loading
-    - Scene and advanced/3D rendering framework
-    - Deltatime measurement
-- v0.004 - Optimizations & Reworkings I:
-    - Completely optimization of the game
-    - Compile time cuts
-    - Compatibility fixes
-    - Error checking
-    - Programming utilities
-- v0.005 - Objects:
-    - Model loader
-    - Animation support
-    - Player character
+- Section I - Engine Foundations
+    - v0.001 - Window:
+        - Functional window
+        - Rendering framework
+        - Updating framework
+    - v0.002 - Camera:
+        - 3D camera (fly and fps)
+        - 2D rendering framework
+    - v0.003 - Scene: **<-- !! We are here !!**
+        - Texture loading
+        - Scene and advanced/3D rendering framework
+        - Deltatime measurement
+    - v0.004 - Optimizations & Reworkings:
+        - Completely optimization of the game
+        - Compile time cuts
+        - Compatibility fixes
+        - Error checking
+        - Programming utilities
+    - v0.005 - Objects:
+        - Model loader
+        - Animation support
+        - Player character
+- Section II - Engine Improvements
+- Section III - Gameplay Foundations
+- Section IV - Improvements & Optimizations
+- Section V - Compatibility & Story

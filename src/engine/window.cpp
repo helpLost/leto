@@ -28,10 +28,6 @@ namespace leto {
         glfwSetWindowUserPointer(instance, this); glfwSetCursorPosCallback(instance, mouse_callback); glfwSetScrollCallback(instance, scroll_callback);
         glfwSetInputMode(instance, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-        shader ourShader = shader("dcl");
-        decal ourdecal = decal("leto.jpg", 0.75f, 0.75f, ourShader);
-        decals.push_back(ourdecal);
-
         // Window icon loading
         GLFWimage images[1]; std::string path = "../src/data/interface/" + icon;
         images[0].pixels = stbi_load(path.c_str(), &images[0].width, &images[0].height, 0, 4); // last param is RGBA channels, with four it means the image must have an alpha
@@ -39,28 +35,46 @@ namespace leto {
         stbi_image_free(images[0].pixels);
 
         // Wrapping up
+        shader dcl("dcl"), mdl("mdl"); addshader(dcl); addshader(mdl);
+
         if(VSYNC) { glfwSwapInterval(1); }
         std::cout << "Created window '" << TITLE << "' successfully. Default dimensions are " << WIDTH << "x" << HEIGHT << "." << std::endl;
         if(autostart) { start(); } // if autostart is false you have to call "start()" somewhere
     }
-    void window::start() { while(!glfwWindowShouldClose(instance)) { render(); update(); } endprogram(); } // run the window until it's closed
+    void window::start() { scene addition; addscene(addition); model add = model("../src/data/assets/backpack/backpack.obj"); scenes[0].addModel(add); while(!glfwWindowShouldClose(instance)) { render(); update(); } endprogram(); } // run the window until it's closed
     void window::render() {
         // Color the backgroud and clear the buffer bits
         glClearColor(background[0], background[1], background[2], 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // activate shader
-        shader ourShader = shader("dcl");
-        ourShader.use();
+        shaders[1].use();
 
-        // pass projection matrix to shader (note that in this case it could change every frame)
+        // view/projection transformations
         glm::mat4 projection = glm::perspective(glm::radians(CAMERA.Zoom), (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
-        ourShader.setMat4("projection", projection);
-
-        // camera/view transformation
         glm::mat4 view = CAMERA.GetViewMatrix();
-        ourShader.setMat4("view", view);
-        decals[0].render(ourShader);
+        shaders[1].setMat4("projection", projection);
+        shaders[1].setMat4("view", view);
+
+        // render the loaded model
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
+        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
+        shaders[1].setMat4("model", model);
+
+        scenes[0].render(shaders);
+
+        // // activate shader
+        // shader ourShader = shader("dcl");
+        // ourShader.use();
+
+        // // pass projection matrix to shader (note that in this case it could change every frame)
+        // glm::mat4 projection = glm::perspective(glm::radians(CAMERA.Zoom), (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
+        // ourShader.setMat4("projection", projection);
+
+        // // camera/view transformation
+        // glm::mat4 view = CAMERA.GetViewMatrix();
+        // ourShader.setMat4("view", view);
+        // scenes[0].render(shaders);
 
         // Swap the buffers
         glfwSwapBuffers(instance);

@@ -41,8 +41,8 @@ namespace leto {
 
             stbi_set_flip_vertically_on_load(true);  
             // load image, create texture and generate mipmaps
-            int w, h, nrChannels;
-            unsigned char *data = stbi_load("E:/Projects/leto/src/data/images/rose.png", &w, &h, &nrChannels, 0);
+            int w, h, nrChannels; std::string path = "../src/data/images/" + name;
+            unsigned char *data = stbi_load(path.c_str(), &w, &h, &nrChannels, 0);
             if (data)
             {
                 glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
@@ -52,15 +52,80 @@ namespace leto {
             {
                 std::cout << "Failed to load texture" << std::endl;
             }
-            stbi_image_free(data);
-        // shader.use(); shader.setInt("texture1", 0);
-        // createTexture2D(TEXTURE, GL_REPEAT, GL_LINEAR, GL_LINEAR, name);
-        // shader.use(); shader.setInt("TEXTURE", 0);
+            stbi_image_free(data); stbi_set_flip_vertically_on_load(false);
     }
     void decal::render(shader &shader) {
         glBindTexture(GL_TEXTURE_2D, TEXTURE); glBindVertexArray(VAO); 
         glm::mat4 model = glm::mat4(1.0f);  model = glm::translate(model, position); shader.setMat4("model", model);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    }
+
+    model::model(std::string const &path, bool gamma) : gammaCorrection(gamma) { loadModel(path); }
+    void model::loadModel(std::string const &path)
+    {
+        stbi_set_flip_vertically_on_load(true);
+        // read file via ASSIMP
+        Assimp::Importer importer;
+        const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+        // check for errors
+        if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
+        {
+            std::cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << std::endl;
+            return;
+        }
+        // retrieve the directory path of the filepath
+        directory = path.substr(0, path.find_last_of('/'));
+
+        // process ASSIMP's root node recursively
+        processNode(scene->mRootNode, scene);
+        stbi_set_flip_vertically_on_load(false);
+    }
+    unsigned int model::TextureFromFile(const char *path, const std::string &directory, bool gamma)
+    {
+        std::string filename = std::string(path);
+        filename = directory + '/' + filename;
+
+        unsigned int textureID;
+        glGenTextures(1, &textureID);
+
+        int width, height, nrComponents;
+        unsigned char *data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
+        if (data)
+        {
+            GLenum format;
+            if (nrComponents == 1)
+                format = GL_RED;
+            else if (nrComponents == 3)
+                format = GL_RGB;
+            else if (nrComponents == 4)
+                format = GL_RGBA;
+
+            glBindTexture(GL_TEXTURE_2D, textureID);
+            glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+            glGenerateMipmap(GL_TEXTURE_2D);
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+            stbi_image_free(data);
+        }
+        else
+        {
+            std::cout << "Texture failed to load at path: " << path << std::endl;
+            stbi_image_free(data);
+        }
+
+        return textureID;
+    }
+
+    scene::scene(std::vector<shader> shaders, std::vector<model> models, std::vector<decal> decals) {}
+    scene::scene() {}
+    void scene::render(std::vector<shader> shaders) {
+        // ofc there's a better way of doing this but I have other things to work on
+        for(int i = 0; i < MODELS.size(); i++) { MODELS[i].render(shaders[MODELS[i].shaderIndex]); }
+        for(int i = 0; i < DECALS.size(); i++) { DECALS[i].render(shaders[DECALS[i].shaderIndex]); }
     }
 }
 
