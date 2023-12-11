@@ -33,11 +33,11 @@ If you have any code improvements, open a discussion or an issue! I'm open to an
 
 ---
 
-### Specs Reccomended
+### Reccomended Specs
 - Windows 8+ or Mac OSX 2018-XXXX
 - 8GB of RAM
-- Intel i8+
+- Intel i7-12700+
 - GTX 970+ / R9 390+
-- 10GBs of storage
+- 60MBs of storage (currently - this is subject to change)
 
 ---
