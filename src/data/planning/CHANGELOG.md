@@ -1,26 +1,27 @@
-- Section I - Engine Foundations
-    - v0.001 - Window:
-        - Functional window
-        - Rendering framework
-        - Updating framework
-    - v0.002 - Camera:
-        - 3D camera (fly and fps)
-        - 2D rendering framework
-    - v0.003 - Scene:
-        - Texture loading
-        - Scene and advanced/3D rendering framework
-        - Deltatime measurement
-    - v0.004 - Optimizations & Reworkings: **<-- !! We are here !!**
-        - Completely optimization of the game
-        - Compile time cuts
-        - Compatibility fixes
-        - Error checking
-        - Programming utilities
-    - v0.005 - Objects:
-        - Model loader
-        - Animation support
-        - Player character
-- Section II - Engine Improvements
-- Section III - Gameplay Foundations
-- Section IV - Improvements & Optimizations
-- Section V - Compatibility & Story
+- # Era I (v0.001 - v0.040)
+    - ## Section I (v0.001 - v0.005) - Engine Foundations
+        - ### v0.001 - Window:
+            - Functional window
+            - Rendering framework
+            - Updating framework
+        - ### v0.002 - Camera:
+            - 3D camera (fly and fps)
+            - 2D rendering framework
+        - ### v0.003 - Scene:
+            - Texture loading
+            - Scene and advanced/3D rendering framework
+            - Deltatime measurement
+            - Model loader
+        - ### v0.004 - Optimizations & Reworkings: **<-- !! We are here !!**
+            - Completely optimization of the game
+            - Compile time cuts
+            - Compatibility fixes
+            - Error checking
+            - Programming utilities
+        - ### v0.005 - Objects:
+            - Animation support
+            - Player character
+    - ## Section II (v0.006 - v0.010) - Engine Improvements
+    - ## Section III (v0.011 - v0.020) - Gameplay Foundations
+    - ## Section IV (v0.021 - v0.025) - Improvements & Optimizations
+    - ## Section V (v0.026 - v0.040) - Compatibility, Gameplay, and Story
