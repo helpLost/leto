@@ -124,8 +124,8 @@ namespace leto {
     scene::scene() {}
     void scene::render(std::vector<shader> shaders) {
         // ofc there's a better way of doing this but I have other things to work on
-        for(int i = 0; i < MODELS.size(); i++) { MODELS[i].render(shaders[MODELS[i].shaderIndex]); }
-        for(int i = 0; i < DECALS.size(); i++) { DECALS[i].render(shaders[DECALS[i].shaderIndex]); }
+        for(int i = 0; i < models.size(); i++) { models[i].render(shaders[models[i].shaderIndex]); }
+        for(int i = 0; i < decals.size(); i++) { decals[i].render(shaders[decals[i].shaderIndex]); }
     }
 }
 

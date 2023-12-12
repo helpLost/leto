@@ -306,11 +306,9 @@
         };
 
         class scene {
-            private:
-                std::vector<model> MODELS; std::vector<decal> DECALS;
             public:
+                std::vector<model> models; std::vector<decal> decals;
                 scene(std::vector<shader> shaders, std::vector<model> models, std::vector<decal> decals); scene();
-                void addModel(model &value) { MODELS.push_back(value); } void addDecal(decal &value) { DECALS.push_back(value); }
                 void render(std::vector<shader> shaders);
         };
     }

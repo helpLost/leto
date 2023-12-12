@@ -15,54 +15,20 @@
         };
         class window {
             private:
-                int WIDTH, HEIGHT;
-                float LASTFRAME, DELTATIME;
+                int WIDTH, HEIGHT; float LASTFRAME, DELTATIME;
                 bool VSYNC = true, ANTIALIASING = true;
-                std::string TITLE; monitor PRIMARY; envtype ENVIRONMENT = DEBUG;
-                camera CAMERA = camera(glm::vec3(0.0f, 0.0f, 3.0f));
+                std::string TITLE; envtype ENVIRONMENT = DEBUG;
+                monitor PRIMARY; camera CAMERA = camera(glm::vec3(0.0f, 0.0f, 3.0f));
 
-                static void mouse_callback(GLFWwindow* instance, double xpos, double ypos)
-                {
-                    window* obj = reinterpret_cast<window *>(glfwGetWindowUserPointer(instance));
-                    obj->mouse_callback(xpos, ypos);
-                }
-                static void scroll_callback(GLFWwindow* instance, double xoffset, double yoffset)
-                {
-                    window* obj = reinterpret_cast<window *>(glfwGetWindowUserPointer(instance));
-                    obj->scroll_callback(xoffset, yoffset);
-                } 
+                static void mouse_callback(GLFWwindow* instance, double xpos, double ypos), scroll_callback(GLFWwindow* instance, double xoffset, double yoffset);
+                virtual void mouse_callback(double xposIn, double yposIn), scroll_callback(double xoffset, double yoffset);
             public:
                 GLFWwindow *instance; float background[3] = {1.0f, 1.0f, 1.0f}; // init to pure white
                 std::vector<scene> scenes; std::vector<shader> shaders;
                 window(std::string title, std::string icon, bool flycamera, bool autostart);
                 void changebg(glm::vec3 newbg) { background[0] = newbg.x; background[1] = newbg.y; background[2] = newbg.z; }
-                void addscene(scene &addition) { scenes.push_back(addition); } void addshader(shader &addition) { shaders.push_back(addition); }
+                void addScene(scene addition), addShader(shader addition), addModel(int scene, model addition), addDecal(int scene, decal addition);
                 void start(), render(), update();
-
-                virtual void mouse_callback(double xposIn, double yposIn)
-                {
-                    float xpos = static_cast<float>(xposIn);
-                    float ypos = static_cast<float>(yposIn);
-
-                    if (CAMERA.firstMouse)
-                    {
-                        CAMERA.lastX = xpos;
-                        CAMERA.lastY = ypos;
-                        CAMERA.firstMouse = false;
-                    }
-
-                    float xoffset = xpos - CAMERA.lastX;
-                    float yoffset = CAMERA.lastY - ypos; // reversed since y-coordinates go from bottom to top
-
-                    CAMERA.lastX = xpos;
-                    CAMERA.lastY = ypos;
-
-                    CAMERA.ProcessMouseMovement(xoffset, yoffset);
-                }
-                virtual void scroll_callback(double xoffset, double yoffset)
-                {
-                    CAMERA.ProcessMouseScroll(static_cast<float>(yoffset));
-                }
         };
     }
 
