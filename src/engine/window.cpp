@@ -22,6 +22,7 @@ namespace leto {
             instance = glfwCreateWindow(WIDTH, HEIGHT, TITLE.c_str(), NULL, NULL); if(!instance) { endprogram("GLFW failed to create a window. Try restarting the program."); }
             glfwMakeContextCurrent(instance); glfwSetWindowPos(instance, 10, 50); // setting this window to current
             if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) { endprogram("GLAD failed to initialize. Something's gone very, very wrong."); }  
+            glEnable(GL_BLEND); glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // remember blending will fuck with text
             glfwSetFramebufferSizeCallback(instance, framebuffer_size_callback); glfwSetWindowUserPointer(instance, this); glfwSetCursorPosCallback(instance, mouse_callback); glfwSetScrollCallback(instance, scroll_callback);
             glfwSetInputMode(instance, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
@@ -32,74 +33,70 @@ namespace leto {
             stbi_image_free(images[0].pixels);
 
             // Wrapping up
-            addShader(shader("dcl")); addShader(shader("mdl"));
-            addScene(scene());
+            shader dcl("dcl"), mdl("mdl"); scene sce;
+            addShader(dcl); addShader(mdl); addScene(sce);
 
             if(VSYNC) { glfwSwapInterval(1); }
             std::cout << "Created window '" << TITLE << "' successfully. Default dimensions are " << WIDTH << "x" << HEIGHT << "." << std::endl;
             if(autostart) { start(); } // if autostart is false you have to call "start()" somewhere
         }
     #pragma endregion
-    void window::start() { addModel(0, model("../src/data/assets/models/backpack/backpack.obj")); while(!glfwWindowShouldClose(instance)) { render(); update(); } endprogram(); } // run the window until it's closed
-    void window::render() {
-        // Color the backgroud and clear the buffer bits
-        glClearColor(background[0], background[1], background[2], 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    #pragma region RUNTIME
+        void window::start() { model mdl("../src/data/assets/models/backpack/backpack.obj"); addModel(0, mdl); while(!glfwWindowShouldClose(instance)) { render(); update(); } endprogram(); } // run the window until it's closed
+        void window::render() {
+            // Color the backgroud and clear the buffer bits
+            glClearColor(background[0], background[1], background[2], 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        shaders[1].use();
+            shaders[1].use();
 
-        // view/projection transformations
-        glm::mat4 projection = glm::perspective(glm::radians(CAMERA.Zoom), (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
-        glm::mat4 view = CAMERA.GetViewMatrix();
-        shaders[1].setMat4("projection", projection);
-        shaders[1].setMat4("view", view);
+            // view/projection transformations
+            glm::mat4 projection = glm::perspective(glm::radians(CAMERA.zoom), (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
+            glm::mat4 view = CAMERA.GetViewMatrix();
+            shaders[1].setMat4("projection", projection);
+            shaders[1].setMat4("view", view);
 
-        // render the loaded model
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
-        shaders[1].setMat4("model", model);
+            // render the loaded model
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
+            model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
+            shaders[1].setMat4("model", model);
 
-        scenes[0].render(shaders);
+            scenes[0].render(shaders);
 
-        // Swap the buffers
-        glfwSwapBuffers(instance);
-    }
+            // Swap the buffers
+            glfwSwapBuffers(instance);
+        }
     void window::update() {
         // Get Deltatime
         float currentFrame = static_cast<float>(glfwGetTime());
         DELTATIME = currentFrame - LASTFRAME; LASTFRAME = currentFrame;
 
         if (glfwGetKey(instance, GLFW_KEY_W) == GLFW_PRESS)
-            CAMERA.ProcessKeyboard(FORWARD, DELTATIME);
+            CAMERA.processKeyboard(FORWARD, DELTATIME);
         if (glfwGetKey(instance, GLFW_KEY_S) == GLFW_PRESS)
-            CAMERA.ProcessKeyboard(BACKWARD, DELTATIME);
+            CAMERA.processKeyboard(BACKWARD, DELTATIME);
         if (glfwGetKey(instance, GLFW_KEY_A) == GLFW_PRESS)
-            CAMERA.ProcessKeyboard(LEFT, DELTATIME);
+            CAMERA.processKeyboard(LEFT, DELTATIME);
         if (glfwGetKey(instance, GLFW_KEY_D) == GLFW_PRESS)
-            CAMERA.ProcessKeyboard(RIGHT, DELTATIME);
+            CAMERA.processKeyboard(RIGHT, DELTATIME);
 
         // Poll for any window events (close, framebuffer, iconify, etc)
         glfwPollEvents();
     }
-    void window::addScene(scene addition) { scenes.push_back(addition); } void window::addShader(shader addition) { shaders.push_back(addition); } 
-    void window::addModel(int scene, model addition) { scenes[scene].models.push_back(addition); } void window::addDecal(int scene, decal addition) { scenes[scene].decals.push_back(addition); }
+    #pragma endregion
+    #pragma region CHANGES AND CALLBACKS
+        void window::changeBG(glm::vec3 newbg) { background[0] = newbg.x; background[1] = newbg.y; background[2] = newbg.z; }
+        void window::addScene(scene &addition) { scenes.push_back(addition); } void window::addShader(shader &addition) { shaders.push_back(addition); } void window::addModel(int scene, model &addition) { scenes[scene].models.push_back(addition); } void window::addDecal(int scene, decal &addition) { scenes[scene].decals.push_back(addition); }
 
-    void window::mouse_callback(GLFWwindow* instance, double xpos, double ypos)
-    {
-        window* obj = reinterpret_cast<window *>(glfwGetWindowUserPointer(instance));
-        obj->mouse_callback(xpos, ypos);
-    }
-    void window::scroll_callback(GLFWwindow* instance, double xoffset, double yoffset)
-    {
-        window* obj = reinterpret_cast<window *>(glfwGetWindowUserPointer(instance));
-        obj->scroll_callback(xoffset, yoffset);
-    } 
-    void window::mouse_callback(double xposIn, double yposIn)
-    {
-        if (CAMERA.firstMouse) { CAMERA.lastX = xposIn; CAMERA.lastY = yposIn; CAMERA.firstMouse = false; }
-        float xoffset = xposIn - CAMERA.lastX, yoffset = CAMERA.lastY - yposIn; // y reversed since y-coordinates go from bottom to top
-        CAMERA.lastX = xposIn; CAMERA.lastY = yposIn; CAMERA.ProcessMouseMovement(xoffset, yoffset);
-    }
-    void window::scroll_callback(double xoffset, double yoffset) { CAMERA.ProcessMouseScroll(static_cast<float>(yoffset)); }
+        void window::mouse_callback(GLFWwindow* instance, double xpos, double ypos) { window* obj = reinterpret_cast<window *>(glfwGetWindowUserPointer(instance)); obj->mouse_callback(xpos, ypos); }
+        void window::scroll_callback(GLFWwindow* instance, double xoffset, double yoffset) { window* obj = reinterpret_cast<window *>(glfwGetWindowUserPointer(instance)); obj->scroll_callback(xoffset, yoffset); } 
+
+        void window::mouse_callback(double xposIn, double yposIn) {
+            if (CAMERA.firstMouse) { CAMERA.lastX = xposIn; CAMERA.lastY = yposIn; CAMERA.firstMouse = false; }
+            float xoffset = xposIn - CAMERA.lastX, yoffset = CAMERA.lastY - yposIn; // y reversed since y-coordinates go from bottom to top
+            CAMERA.lastX = xposIn; CAMERA.lastY = yposIn; CAMERA.processMouse(xoffset, yoffset);
+        }
+        void window::scroll_callback(double xoffset, double yoffset) { CAMERA.processScroll(static_cast<float>(yoffset)); }
+    #pragma endregion
 }

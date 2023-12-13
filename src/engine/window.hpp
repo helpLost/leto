@@ -2,7 +2,6 @@
 #define SRC_ENGINE_WINDOW_HPP
 
     #include "scene.hpp"
-    #include "camera.hpp"
     #include <GLFW/glfw3.h>
     namespace leto {
         inline void endprogram(std::string error) { glfwTerminate(); throw std::runtime_error(error.c_str()); }; inline void endprogram() { glfwTerminate(); }
@@ -26,8 +25,7 @@
                 GLFWwindow *instance; float background[3] = {1.0f, 1.0f, 1.0f}; // init to pure white
                 std::vector<scene> scenes; std::vector<shader> shaders;
                 window(std::string title, std::string icon, bool flycamera, bool autostart);
-                void changebg(glm::vec3 newbg) { background[0] = newbg.x; background[1] = newbg.y; background[2] = newbg.z; }
-                void addScene(scene addition), addShader(shader addition), addModel(int scene, model addition), addDecal(int scene, decal addition);
+                void changeBG(glm::vec3 newbg); void addScene(scene &addition), addShader(shader &addition), addModel(int scene, model &addition), addDecal(int scene, decal &addition);
                 void start(), render(), update();
         };
     }

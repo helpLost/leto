@@ -1,11 +1,10 @@
 #include "scene.hpp"
 #include <fstream>
 #include <sstream>
-#include <iostream>
 #define STB_IMAGE_IMPLEMENTATION
 #include <STB/stb_image.h>
-#include <GLAD/gtc/matrix_transform.hpp>
-#include <GLAD/gtc/type_ptr.hpp>
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
 
 void compileShader(unsigned &program, const char* vraw, const char* fraw);
 void createVertexObject(unsigned &VAO, unsigned &VBO, unsigned &EBO, float vertices[], unsigned int indices[], float vertSize, float indSize, int drawType, GLint vertexAttribSize, bool texture, GLsizei stride, const void* pointer);
@@ -60,9 +59,37 @@ namespace leto {
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     }
 
-    model::model(std::string const &path, bool gamma) : gammaCorrection(gamma) { loadModel(path); }
-    void model::loadModel(std::string const &path)
+    mesh::mesh(std::vector<vertex> vertices, std::vector<unsigned int> indices, std::vector<texture> textures) 
+        :vertices(vertices), indices(indices), textures(textures) 
     {
+        glGenVertexArrays(1, &VAO); glGenBuffers(1, &VBO); glGenBuffers(1, &EBO);
+        glBindVertexArray(VAO); glBindBuffer(GL_ARRAY_BUFFER, VBO); glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vertex), &vertices[0], GL_STATIC_DRAW);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO); glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+
+        // positions, normals | texture coords | tangent, bitangent | bone ids, and bone weights
+        glEnableVertexAttribArray(0); glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)0); glEnableVertexAttribArray(1); glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, normal));
+        glEnableVertexAttribArray(2); glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, texture));
+        glEnableVertexAttribArray(3); glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, tangent)); glEnableVertexAttribArray(4); glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, bitangent));
+        glEnableVertexAttribArray(5); glVertexAttribIPointer(5, 4, GL_INT, sizeof(vertex), (void*)offsetof(vertex, boneids)); glEnableVertexAttribArray(6); glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, boneweights));
+
+        glBindVertexArray(0);
+    }
+    void mesh::render(leto::shader &shader) 
+    {
+        unsigned diffuse = 1, specular = 1, normal = 1, height = 1;
+        for(unsigned i = 0; i < textures.size(); i++)
+        {
+            glActiveTexture(GL_TEXTURE0 + i);
+            std::string number; std::string name = textures[i].type;
+            if(name == "texture_diffuse") { number = std::to_string(diffuse++); } else if(name == "texture_specular") { number = std::to_string(specular++); } else if(name == "texture_normal") { number = std::to_string(normal++); } else if(name == "texture_height") { number = std::to_string(height++); }
+            shader.setInt((name + number).c_str(), i); glBindTexture(GL_TEXTURE_2D, textures[i].id);
+        }
+        
+        glBindVertexArray(VAO); glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0); glActiveTexture(GL_TEXTURE0);
+    }
+
+    model::model(std::string const &path) {
         stbi_set_flip_vertically_on_load(true);
         // read file via ASSIMP
         Assimp::Importer importer;
@@ -74,14 +101,65 @@ namespace leto {
             return;
         }
         // retrieve the directory path of the filepath
-        directory = path.substr(0, path.find_last_of('/'));
+        std::string directory = path.substr(0, path.find_last_of('/'));
 
         // process ASSIMP's root node recursively
-        processNode(scene->mRootNode, scene);
+        processNode(scene->mRootNode, scene, directory);
         stbi_set_flip_vertically_on_load(false);
     }
-    unsigned int model::TextureFromFile(const char *path, const std::string &directory, bool gamma)
-    {
+    void model::render(shader &shader) {
+        glEnable(GL_DEPTH_TEST);
+        for(unsigned i = 0; i < meshes.size(); i++)
+            meshes[i].render(shader);
+        glDisable(GL_DEPTH_TEST);
+    }
+    void model::processNode(aiNode *node, const aiScene *scene, std::string directory) {
+        for(unsigned i = 0; i < node->mNumMeshes; i++) { 
+            std::vector<vertex> vert; std::vector<unsigned> ind; std::vector<texture> tex;
+            aiMesh* mesh = scene->mMeshes[node->mMeshes[i]]; 
+
+            // loop through each of the mesh's vertices
+            for(unsigned i = 0; i < mesh->mNumVertices; i++)
+            {
+                vertex vertex; glm::vec3 vector;
+                vector.x = mesh->mVertices[i].x; vector.y = mesh->mVertices[i].y; vector.z = mesh->mVertices[i].z; vertex.position = vector;
+
+                if(mesh->HasNormals()) { vector.x = mesh->mNormals[i].x; vector.y = mesh->mNormals[i].y; vector.z = mesh->mNormals[i].z; vertex.normal = vector; }
+                if(mesh->mTextureCoords[0]) {
+                    glm::vec2 vec; vec.x = mesh->mTextureCoords[0][i].x; vec.y = mesh->mTextureCoords[0][i].y; vertex.texture = vec;
+                    vector.x = mesh->mTangents[i].x; vector.y = mesh->mTangents[i].y; vector.z = mesh->mTangents[i].z; vertex.tangent = vector;
+                    vector.x = mesh->mBitangents[i].x; vector.y = mesh->mBitangents[i].y; vector.z = mesh->mBitangents[i].z; vertex.bitangent = vector;
+                } else { vertex.texture = glm::vec2(0.0f, 0.0f); }
+                vert.push_back(vertex);
+            }
+            // loop through the mesh's faces
+            for(unsigned i = 0; i < mesh->mNumFaces; i++) { aiFace face = mesh->mFaces[i]; for(unsigned j = 0; j < face.mNumIndices; j++) { ind.push_back(face.mIndices[j]); } }
+
+            // process materials, we assume a convention for sampler names in the shaders. Each diffuse texture should be named as 'texture_[TYPE][NUMBER]' where [type] is whatever kind of texture it is and [number] is a sequential number ranging from 1 to MAX_SAMPLER_NUMBER.
+            aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+            std::vector<texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse", directory); tex.insert(tex.end(), diffuseMaps.begin(), diffuseMaps.end());
+            std::vector<texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular", directory); tex.insert(tex.end(), specularMaps.begin(), specularMaps.end());
+            std::vector<texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal", directory); tex.insert(tex.end(), normalMaps.begin(), normalMaps.end());
+            std::vector<texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height", directory); tex.insert(tex.end(), heightMaps.begin(), heightMaps.end());
+
+            meshes.push_back(leto::mesh(vert, ind, tex)); 
+        }
+        for(unsigned i = 0; i < node->mNumChildren; i++) { processNode(node->mChildren[i], scene, directory); }
+    }
+    std::vector<texture> model::loadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName, std::string directory) {
+        std::vector<texture> textures;
+        for(unsigned i = 0; i < mat->GetTextureCount(type); i++) {
+            aiString str; mat->GetTexture(type, i, &str);
+            // check if texture was loaded before and skip it if it was
+            bool skip = false; for(unsigned j = 0; j < loadedtex.size(); j++) { if(std::strcmp(loadedtex[j].path.data(), str.C_Str()) == 0) { textures.push_back(loadedtex[j]); skip = true; break; } }
+            if(!skip) {
+                texture tex; tex.id = loadTexture(str.C_Str(), directory); tex.type = typeName; tex.path = str.C_Str();
+                textures.push_back(tex); loadedtex.push_back(tex);
+            }
+        }
+        return textures;
+    }
+    unsigned model::loadTexture(const char *path, const std::string &directory) {
         std::string filename = std::string(path);
         filename = directory + '/' + filename;
 

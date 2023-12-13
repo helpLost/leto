@@ -13,13 +13,14 @@
             - Deltatime measurement
             - Model loader
         - ### v0.004 - Optimizations & Reworkings: **<-- !! We are here !!**
-            - Completely optimization of the game
-            - Compile time cuts
-            - Compatibility fixes
+            - Optimization & organization of the codebase
+            - Compile & load time cuts
             - Error checking
             - Programming utilities
         - ### v0.005 - Objects:
             - Animation support
+            - Model preferences (collision, animation, etc)
+            - Collision (? still up in the air)
             - Player character
     - ## Section II (v0.006 - v0.010) - Engine Improvements
     - ## Section III (v0.011 - v0.020) - Gameplay Foundations
