@@ -38,6 +38,6 @@ If you have any code improvements, open a discussion or an issue! I'm open to an
 - 8GB of RAM
 - Intel i7-12700+
 - GTX 970+ / R9 390+
-- 60MBs of storage (currently - this is subject to change)
+- 200MBs of storage (currently - this is subject to change)
 
 ---
