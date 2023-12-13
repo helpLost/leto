@@ -17,7 +17,7 @@
                 int WIDTH, HEIGHT; float LASTFRAME, DELTATIME;
                 bool VSYNC = true, ANTIALIASING = true;
                 std::string TITLE; envtype ENVIRONMENT = DEBUG;
-                monitor PRIMARY; camera CAMERA = camera(glm::vec3(0.0f, 0.0f, 3.0f));
+                monitor PRIMARY; camera CAMERA;
 
                 static void mouse_callback(GLFWwindow* instance, double xpos, double ypos), scroll_callback(GLFWwindow* instance, double xoffset, double yoffset);
                 virtual void mouse_callback(double xposIn, double yposIn), scroll_callback(double xoffset, double yoffset);

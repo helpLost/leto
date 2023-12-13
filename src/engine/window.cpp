@@ -11,7 +11,7 @@ namespace leto {
             primary = glfwGetPrimaryMonitor(); resolution = glfwGetVideoMode(primary); // get the actual monitor and its details
             if(!primary) { endprogram("Failed to grab the primary monitor. You're probably on an unsupported machine."); } std::cout << "Primary monitor successfully grabbed. Default dimensions are " << resolution->width << "x" << resolution->height << "." << std::endl;
         }
-        window::window(std::string title, std::string icon, bool flycamera, bool autostart) :TITLE(title) {
+        window::window(std::string title, std::string icon, bool flycamera, bool autostart) :TITLE(title), CAMERA(glm::vec3(0.0f, 0.0f, 3.0f), PRIMARY.dimensions().x, PRIMARY.dimensions().y) {
             // Params
             if(TITLE.empty()) { endprogram("A window's title is null. This is very likely a problem with the source code, please open a ticket on Github."); }
             WIDTH = int(PRIMARY.dimensions().x / 1.25); HEIGHT = int(PRIMARY.dimensions().y / 1.25); if(WIDTH <= 100 || HEIGHT <= 100) { endprogram("Window '" + TITLE + "'s width and height don't seem to be accurate. Try restarting the program."); }
@@ -80,6 +80,10 @@ namespace leto {
             CAMERA.processKeyboard(LEFT, DELTATIME);
         if (glfwGetKey(instance, GLFW_KEY_D) == GLFW_PRESS)
             CAMERA.processKeyboard(RIGHT, DELTATIME);
+        if (glfwGetKey(instance, GLFW_KEY_SPACE) == GLFW_PRESS)
+            CAMERA.processKeyboard(UP, DELTATIME);
+        if (glfwGetKey(instance, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+            CAMERA.processKeyboard(DOWN, DELTATIME);
 
         // Poll for any window events (close, framebuffer, iconify, etc)
         glfwPollEvents();

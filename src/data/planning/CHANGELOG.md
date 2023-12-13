@@ -19,6 +19,7 @@
             - Programming utilities
         - ### v0.005 - Objects:
             - Animation support
+            - Camera types (fly, fps, cinematic)
             - Model preferences (collision, animation, etc)
             - Collision (? still up in the air)
             - Player character

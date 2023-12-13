@@ -5,21 +5,19 @@
     #include <GLAD/glm.hpp>
     #include <GLAD/gtc/matrix_transform.hpp>
     namespace leto {
-        enum movement { FORWARD, BACKWARD, LEFT, RIGHT }; enum type { FLY, FPS, CINEMATIC };
+        enum movement { FORWARD, BACKWARD, LEFT, RIGHT, UP, DOWN }; enum type { FLY, FPS, CINEMATIC };
         class camera
         {
             public:
-                float lastX = 1536 / 2.0f, lastY = 864 / 2.0f;
-                float movementSpeed = 2.5f, zoom = 45.0f, sensitivity = 0.1f; float yaw = -90.0f, pitch = 0.0f;
-                bool firstMouse = true;
+                float lastX, lastY, yaw = -90.0f, pitch = 0.0f, zoom = 45.0f;
+                bool firstMouse = true; type cameratype;
 
-                glm::vec3 position, front = glm::vec3(0.0f, 0.0f, -1.0f), up = glm::vec3(0.0f, 1.0f, 0.0f), right, worldUp;
-
-                // constructor with vectors
-                camera(glm::vec3 position) :position(position), worldUp(up) { updateFront(); }
-                glm::mat4 GetViewMatrix() { return glm::lookAt(position, position + front, up); }
+                camera(glm::vec3 position, int windowWidth, int windowHeight) :position(position), worldUp(up), lastX(windowWidth / 2.0f), lastY(windowHeight / 2.0f) { updateFront(); }
                 void processKeyboard(movement direction, float deltaTime), processMouse(float xoffset, float yoffset), processScroll(float yoffset);
+                glm::mat4 GetViewMatrix() { return glm::lookAt(position, position + front, up); }
             private:
+                float movementSpeed = 2.5f, sensitivity = 0.1f;
+                glm::vec3 position, front = glm::vec3(0.0f, 0.0f, -1.0f), up = glm::vec3(0.0f, 1.0f, 0.0f), right, worldUp;
                 // calculates the front vector from the Camera's (updated) Euler Angles
                 void updateFront()
                 {
