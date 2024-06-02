@@ -4,6 +4,7 @@ Leto (Létā) is a desktop driving game about escaping from a falling nation. Da
 ---
 
 ### About the Game
+yo this lore all outdated
 Set in the world of Sveta, the ancient nation of Nazhemlya has withstood many catastrophes. Assasinations, natural disasters, plagues, invasions. Yet, the one thing that seems like it could bring it all crashing down turns out to be Nazhemlya herself. 
 
 Under the ruthless authoritarian leadership of Pavel Sylnov, the country's peasantry has been smothered like never before, raising tensions to an unbearable level. Hatred for the military and police forces continue to grow, sparking riots and insurgencies. 
